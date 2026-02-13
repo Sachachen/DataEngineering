@@ -1,0 +1,69 @@
+services:
+  # MongoDB - Base de données
+  mongodb:
+    image: mongo:7.0
+    container_name: ligue1_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: ligue1_db
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - ligue1-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/ligue1_db --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spider - Collecte automatique des données
+  spider:
+    build:
+      context: ./scraper
+      dockerfile: Dockerfile
+    container_name: ligue1_spider
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      MONGO_URI: mongodb://admin:password123@mongodb:27017/ligue1_db?authSource=admin
+      LOG_LEVEL: INFO
+    volumes:
+      - ./scraper:/app
+      - ./data:/app/data
+    networks:
+      - ligue1-network
+    restart: unless-stopped
+    # Lance le scheduler avec scraping immédiat au démarrage
+    command: python scheduler.py --immediate --interval 1
+
+  # Dashboard - Interface web Dash
+  webapp:
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile
+    container_name: ligue1_dashboard
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    ports:
+      - "8050:8050"
+    environment:
+      MONGO_URI: mongodb://admin:password123@mongodb:27017/ligue1_db?authSource=admin
+    volumes:
+      - ./webapp:/app
+    networks:
+      - ligue1-network
+    restart: unless-stopped
+    command: python app.py
+
+volumes:
+  mongo-data:
+
+networks:
+  ligue1-network:
+    driver: bridge
