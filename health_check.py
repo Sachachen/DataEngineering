@@ -50,16 +50,15 @@ def check_mongodb():
         
         # Check collections
         collections = {
-            'players': db.players.count_documents({}),
-            'surface_stats': db.surface_stats.count_documents({}),
-            'matches': db.matches.count_documents({}),
-            'tournaments': db.tournaments.count_documents({})
+            'ligue1_teams': db.ligue1_teams.count_documents({}),
+            'ligue1_stats': db.ligue1_stats.count_documents({})
         }
         
         total_docs = sum(collections.values())
         
         if total_docs == 0:
-            print_warning("Database is empty - run init_data.py or scraping")
+            print_warning("Database is empty - waiting for spider to scrape data")
+            print_info("Spider runs automatically every hour or manually: docker exec ligue1_spider scrapy crawl ligue1")
         else:
             print_success(f"Database has {total_docs} total documents")
             for collection, count in collections.items():
@@ -96,6 +95,57 @@ def check_dashboard():
         return False
     except Exception as e:
         print_error(f"Dashboard check failed: {e}")
+        return False
+
+def check_spider():
+    """Check Spider service and scraping status"""
+    print_header("SPIDER CHECK")
+    
+    try:
+        import subprocess
+        
+        # Check if spider container is running
+        result = subprocess.run(
+            ['docker', 'ps', '--filter', 'name=ligue1_spider', '--format', '{{.Status}}'],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        
+        if result.returncode == 0 and "Up" in result.stdout:
+            print_success("Spider container is running")
+            
+            # Check scheduler logs with better encoding handling
+            try:
+                logs_result = subprocess.run(
+                    ['docker', 'logs', 'ligue1_spider', '--tail', '10'],
+                    capture_output=True,
+                    timeout=5,
+                    encoding='utf-8',
+                    errors='ignore'
+                )
+                
+                logs = logs_result.stdout + logs_result.stderr
+                
+                if logs and "Scheduler is running" in logs:
+                    print_success("Scheduler is active")
+                
+                if logs and "Spider completed successfully" in logs:
+                    print_success("Last scraping completed successfully")
+                elif logs and "Starting Ligue 1 spider" in logs:
+                    print_info("Spider is scraping...")
+                    
+            except Exception:
+                pass  # Ignore logs errors
+            
+            return True
+        else:
+            print_warning("Spider container is not running")
+            print_info("Start with: docker-compose up -d spider")
+            return False
+            
+    except Exception as e:
+        print_warning(f"Spider check failed: {e}")
         return False
 
 def check_docker():
@@ -149,6 +199,7 @@ def main():
     checks = {
         'Docker': check_docker(),
         'MongoDB': check_mongodb(),
+        'Spider': check_spider(),
         'Dashboard': check_dashboard()
     }
     
@@ -176,8 +227,9 @@ def main():
         print("Troubleshooting:")
         print("  1. Ensure Docker containers are running: docker-compose up -d")
         print("  2. Check logs: docker-compose logs")
-        print("  3. Initialize data: python init_data.py")
-        print("  4. See QUICKSTART.md for detailed instructions")
+        print("  3. Restart services: docker-compose restart")
+        print("  4. Trigger scraping: docker exec ligue1_spider scrapy crawl ligue1")
+        print("  5. See README.md for detailed instructions")
         return 1
 
 if __name__ == "__main__":
