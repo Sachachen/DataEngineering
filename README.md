@@ -106,7 +106,7 @@ venv\Scripts\activate
 
 # Activer l'environnement (Linux/Mac)
 source venv/bin/activate
-
+```
 ### 3. Lancer l'Application
 
 ```bash
