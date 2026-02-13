@@ -73,50 +73,6 @@ def check_mongodb():
         print_error(f"MongoDB connection failed: {e}")
         return False
 
-def check_api():
-    """Check API service"""
-    print_header("API CHECK")
-    
-    api_url = "http://localhost:8000"
-    
-    try:
-        # Test root endpoint
-        response = requests.get(f"{api_url}/", timeout=5)
-        if response.status_code == 200:
-            print_success("API root endpoint accessible")
-        else:
-            print_error(f"API returned status {response.status_code}")
-            return False
-        
-        # Test summary endpoint
-        response = requests.get(f"{api_url}/api/stats/summary", timeout=5)
-        if response.status_code == 200:
-            data = response.json()
-            print_success("API stats endpoint working")
-            print(f"  Total players: {data.get('total_players', 0)}")
-            print(f"  Total matches: {data.get('total_matches', 0)}")
-            print(f"  Total tournaments: {data.get('total_tournaments', 0)}")
-        else:
-            print_warning(f"Stats endpoint returned status {response.status_code}")
-        
-        # Test players endpoint
-        response = requests.get(f"{api_url}/api/players?limit=5", timeout=5)
-        if response.status_code == 200:
-            players = response.json()
-            print_success(f"Players endpoint working (returned {len(players)} players)")
-        else:
-            print_warning(f"Players endpoint returned status {response.status_code}")
-        
-        return True
-        
-    except requests.exceptions.ConnectionError:
-        print_error("Cannot connect to API - is it running?")
-        print_info("Start with: docker-compose up api")
-        return False
-    except Exception as e:
-        print_error(f"API check failed: {e}")
-        return False
-
 def check_dashboard():
     """Check Dashboard service"""
     print_header("DASHBOARD CHECK")
@@ -193,7 +149,6 @@ def main():
     checks = {
         'Docker': check_docker(),
         'MongoDB': check_mongodb(),
-        'API': check_api(),
         'Dashboard': check_dashboard()
     }
     
@@ -215,8 +170,6 @@ def main():
         print(f"\n{Colors.GREEN}{Colors.BOLD}✓ All systems operational!{Colors.END}\n")
         print("You can access:")
         print(f"  • Dashboard: http://localhost:8050")
-        print(f"  • API: http://localhost:8000")
-        print(f"  • API Docs: http://localhost:8000/docs")
         return 0
     else:
         print(f"\n{Colors.RED}{Colors.BOLD}✗ Some checks failed{Colors.END}\n")

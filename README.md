@@ -95,27 +95,39 @@ git clone https://github.com/Sachachen/DataEngineering.git
 cd DataEngineering
 ```
 
-### 2. Lancer l'Application
+### 2. Configuration de l'Environnement
 
 ```bash
-# Une seule commande et tout démarre !
+# Créer un environnement virtuel Python
+python -m venv venv
+
+# Activer l'environnement (Windows)
+venv\Scripts\activate
+
+# Activer l'environnement (Linux/Mac)
+source venv/bin/activate
+
+### 3. Lancer l'Application
+
+```bash
+# Démarrage de tous les services
 docker-compose up -d
 ```
 
-#### Méthode détaillée (étape par étape)
+#### Méthode détaillée
 
 ```bash
-# D'abord on construit les images Docker
+# Construction des images Docker
 docker-compose build
 
-# Ensuite on lance tout en arrière-plan
+# Lancement des services en arrière-plan
 docker-compose up -d
 
-# Et si on est curieux, on regarde les logs défiler
+# Consultation des logs en temps réel
 docker-compose logs -f
 ```
 
-### 3. Vérification du Déploiement
+### 4. Vérification du Déploiement
 
 ```bash
 # Vérifier l'état des conteneurs
@@ -130,15 +142,12 @@ docker-compose logs webapp
 python health_check.py
 ```
 
-### 4. Admirer votre œuvre 🎨
+### 5. Accès au Dashboard
 
-Ouvrez votre navigateur préféré et allez sur : **http://localhost:8050**
-
-Et voilà ! Vous devriez voir un magnifique dashboard avec toutes les stats de la Ligue 1. Si ça marche du premier coup, vous pouvez vous taper dans le dos ! 👏
+Le dashboard est accessible via navigateur à l'adresse : **http://localhost:8050**
 
 ---
 
-## 🔧 Configuration
 
 ### Variables d'Environnement
 
@@ -365,70 +374,68 @@ docker-compose exec spider python -c "from pymongo import MongoClient; print(Mon
 
 ---
 
-## 🎯 Pourquoi on a choisi ces technos ?
+## 🎯 Choix Technologiques
 
 ### 1. Scrapy pour le Web Scraping
 
-**Pourquoi c'est cool :**
-- C'est un vieux de la vieille (dans le bon sens), super stable et fiable
-- Parsing HTML facile comme bonjour avec les CSS Selectors
-- Un système de pipeline extensible (vous pouvez y brancher ce que vous voulez)
-- Gestion d'erreurs automatique (il réessaye tout seul comme un grand)
-- Ultra rapide grâce à l'asynchrone
-- Un tas de middleware pour personnaliser
+**Avantages :**
+- Parsing HTML optimisé avec sélecteurs CSS
+- Système de pipeline extensible et modulaire
+- Gestion automatique des erreurs et retry mechanism
+- Performance élevée grâce à l'architecture asynchrone
+- Middleware personnalisable pour étendre les fonctionnalités
 
-**On a aussi pensé à :** BeautifulSoup + Requests, mais franchement, moins puissant et pas de pipeline intégré
+**Alternative considérée :** BeautifulSoup + Requests, solution moins performante et sans système de pipeline intégré
 
 ### 2. MongoDB comme Base de Données
 
-**Pourquoi MongoDB et pas une DB classique :**
-- Pas de schéma strict = liberté totale ! (parfait quand on scrappe et qu'on ne sait pas trop à quoi s'attendre)
-- Les agrégations sont super rapides (important pour nos stats)
-- L'upsert intégré évite les doublons sans se prendre la tête
-- Vous voulez scaler ? Facile, vous ajoutez des serveurs
-- Idéal pour nos données un peu "freestyle" de scraping
+**Avantages :**
+- Schéma flexible adapté aux données de scraping évolutives
+- Performance optimale pour les opérations d'agrégation
+- Opération upsert native pour éviter les doublons
+- Solution idéale pour le stockage de données semi-structurées
 
-**L'alternative :** PostgreSQL, mais trop rigide pour notre cas (faudrait tout définir à l'avance, bof...)
+**Alternative considérée :** PostgreSQL, nécessitant un schéma rigide moins adapté aux données de scraping
 
 ### 3. Dash/Plotly pour le Dashboard
 
-**Pourquoi on adore Dash :**
-- Tout en Python ! Pas besoin de jongler avec du JavaScript (ouf 😅)
-- Des graphiques interactifs magnifiques sans transpirer
-- Les callbacks sont super intuitifs (même un lundi matin)
-- On prototype en 2h ce qui prendrait une journée ailleurs
-- Responsive et moderne par défaut
+**Avantages de Dash :**
+- Framework entièrement en Python, éliminant la nécessité de développer en JavaScript
+- Bibliothèque de graphiques interactifs haute performance
+- Système de callbacks réactifs intuitif et efficace
+- Développement rapide grâce à une API de haut niveau
+- Interface responsive et moderne par défaut
 
-**On aurait pu faire :** Flask + Chart.js, mais ça demande plus de code frontend et on aime pas se compliquer la vie
+**Alternative considérée :** Flask + Chart.js, nécessitant cependant plus de développement frontend et une architecture plus complexe
 
 ### 4. Docker Compose pour l'Orchestration
 
-**Docker Compose, c'est la vie :**
-- "Ça marche sur ma machine" ? Avec Docker, ça marche partout ! 🎉
-- Chaque service dans sa bulle (ils peuvent pas se marcher dessus)
-- Plus de "pip install" à n'en plus finir, tout est automatisé
-- Les conteneurs se parlent entre eux tout seuls (comme des grands)
-- Vos données persistent même si vous redémarrez tout
-- Les health checks vous préviennent si un truc déconne
+**Avantages de Docker Compose :**
+- Garantie de reproductibilité de l'environnement sur toutes les plateformes
+- Isolation des services pour éviter les conflits de dépendances
+- Automatisation complète de l'installation des dépendances
+- Réseau interne permettant la communication inter-conteneurs
+- Persistance des données via volumes Docker
+- Surveillance de l'état des services avec health checks intégrés
 
-**Sans Docker ?** Bon courage pour tout installer à la main... on vous souhaite bien du plaisir 😬
+**Alternative :** Installation manuelle nécessitant une configuration complexe et une gestion individuelle de chaque dépendance
 
 ### 5. Schedule pour la Planification
 
-**Simple mais efficace :**
-- Léger comme une plume
-- Une API tellement claire qu'on comprend en 2 secondes
-- Pas besoin de se battre avec cron ou systemd
-- Compatible partout (Windows, Linux, Mac... partout !)
-- Parfait pour nos besoins simples
+**Avantages de Schedule :**
+- Bibliothèque légère avec faible empreinte mémoire
+- API simple et intuitive
+- Indépendant des utilitaires système (cron, systemd)
+- Compatibilité multiplateforme (Windows, Linux, macOS)
+- Solution adaptée aux besoins de planification périodique du projet
 
-**On aurait pu faire :** Celery + Redis, mais c'est un peu comme prendre un marteau-piqueur pour planter un clou
+**Alternative considérée :** Celery + Redis, solution plus complexe offrant des fonctionnalités avancées non nécessaires pour ce cas d'usage
 
 ---
 
-## 🔍 Ça marche pas ? On vous aide !
+## 🔍 Guide de Dépannage
 
-### Les conteneurs veulent pas démarrer 😤
+### Problème de démarrage des conteneurs
 
 ```bash
 # Vérifier les ports occupés
@@ -443,7 +450,7 @@ docker-compose down -v
 docker-compose up -d --force-recreate
 ```
 
-### Le spider fait la grève 🕷️
+### Erreur du service de scraping
 
 ```bash
 # Vérifier les logs du spider
@@ -473,7 +480,7 @@ docker-compose exec mongodb mongosh -u admin -p password123 --eval "
 docker-compose exec spider scrapy crawl ligue1
 ```
 
-### MongoDB joue à cache-cache 🙈
+### Problème de connexion MongoDB
 
 ```bash
 # Vérifier le health check
@@ -488,28 +495,28 @@ docker-compose exec mongodb mongosh -u admin -p password123 --authenticationData
 
 ---
 
-## 📈 Ce qu'on aimerait ajouter (un jour... peut-être)
+## 📈 Roadmap et Évolutions Futures
 
-### Dans les prochaines semaines (si on a le temps)
-- [ ] Des tests (oui, on sait, on devrait...)
-- [ ] Notifications Discord/Slack quand votre équipe gagne (ou perd 😢)
-- [ ] Graphiques historiques pour voir l'évolution sur la saison
-- [ ] Une vraie API REST (FastAPI, parce que c'est classe)
-- [ ] Calendrier des matchs à venir
+### Court terme
+- [ ] Implémentation de tests unitaires et d'intégration
+- [ ] Système de notifications (Discord/Slack) pour les événements sportifs
+- [ ] Graphiques d'évolution temporelle sur la saison
+- [ ] API REST avec FastAPI pour l'accès programmatique aux données
+- [ ] Intégration du calendrier des matchs
 
-### Dans quelques mois (si on est motivés)
-- [ ] Scraper d'autres sources (L'Équipe, site officiel de la LFP...)
-- [ ] Stats des joueurs individuels (Mbappé vs Haaland, let's go!)
-- [ ] Un cache Redis pour aller encore plus vite
-- [ ] Exports PDF/Excel pour impressionner vos collègues
-- [ ] Un système de login (parce que c'est la classe)
+### Moyen terme
+- [ ] Diversification des sources de données (L'Équipe, LFP)
+- [ ] Extension aux statistiques individuelles des joueurs
+- [ ] Implémentation d'un cache Redis pour optimisation des performances
+- [ ] Fonctionnalités d'export (PDF, Excel, CSV)
+- [ ] Système d'authentification et de gestion des utilisateurs
 
-### Dans nos rêves les plus fous 💭
-- [ ] Une IA pour prédire les matchs (on sera riches !)
-- [ ] Passer sur Kubernetes (pour faire les pros)
-- [ ] Une app mobile parce que c'est 2026 quand même
-- [ ] Support de toutes les ligues du monde (bon, au moins la Premier League)
-- [ ] Système de pronos pour faire mumuse avec les potes
+### Long terme
+- [ ] Modèles prédictifs basés sur l'apprentissage automatique
+- [ ] Migration vers Kubernetes pour scalabilité
+- [ ] Développement d'une application mobile
+- [ ] Extension à d'autres championnats européens
+- [ ] Plateforme de pronostics collaborative
 
 ---
 
@@ -540,17 +547,17 @@ docker-compose exec mongodb mongorestore --username admin --password password123
 
 ---
 
-## 👥 Envie de contribuer ?
+## 👥 Contribution
 
-On adore les contributions ! Si vous avez une idée ou si vous voulez corriger un truc :
+Les contributions sont les bienvenues. Pour contribuer au projet :
 
-1. Forkez le projet (c'est pas douloureux, promis)
-2. Créez votre branche (`git checkout -b feature/MonIdeeDeFou`)
-3. Commitez vos changements (`git commit -m 'Ajout de la fonctionnalité qui déchire'`)
-4. Poussez tout ça (`git push origin feature/MonIdeeDeFou`)
-5. Ouvrez une Pull Request et on discute ! ☕
+1. Forkez le repository
+2. Créez votre branche de fonctionnalité (`git checkout -b feature/NouvelleFonctionnalite`)
+3. Committez vos modifications (`git commit -m 'Ajout d'une nouvelle fonctionnalité'`)
+4. Pushez vers la branche (`git push origin feature/NouvelleFonctionnalite`)
+5. Ouvrez une Pull Request
 
-Pas besoin d'être un expert, tout le monde est le bienvenu ! 🤗
+Toutes les contributions, qu'elles soient mineures ou majeures, sont appréciées.
 
 ---
 
@@ -579,7 +586,7 @@ Pour toute question ou suggestion :
 
 ---
 
-**Fait avec ❤️, ☕ et beaucoup de passion pour le foot français**
+**Développé avec passion pour l'analyse sportive et les données du football français**
 
-*PS : Si ce projet vous a aidé ou vous a fait gagner du temps, n'hésitez pas à lui mettre une petite ⭐ sur GitHub, ça fait toujours plaisir !*
+*Note : Si ce projet vous a été utile, n'hésitez pas à lui attribuer une étoile ⭐ sur GitHub.*
 
