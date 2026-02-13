@@ -106,6 +106,9 @@ venv\Scripts\activate
 
 # Activer l'environnement (Linux/Mac)
 source venv/bin/activate
+
+# Installer les dépendances pour le health_check.py
+pip install -r requirements.txt
 ```
 ### 3. Lancer l'Application
 
